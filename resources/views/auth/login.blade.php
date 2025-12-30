@@ -60,11 +60,11 @@
                             <label class="form-check-label small" for="remember">Remember me</label>
                         </div>
 
-                        @if (Route::has('password.request'))
+                        {{-- @if (Route::has('password.request'))
                             <a class="small text-decoration-none" href="{{ route('password.request') }}">
                                 ลืมรหัสผ่าน?
                             </a>
-                        @endif
+                        @endif --}}
                     </div>
 
                     <button class="btn btn-primary btn-lg w-100 rounded-3">
