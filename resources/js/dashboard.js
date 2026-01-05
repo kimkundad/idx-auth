@@ -142,6 +142,28 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(style);
   })();
 
+  function cleanQr(raw) {
+  if (!raw) return '';
+
+  let s = String(raw);
+
+  // 1) บางปืนส่งเป็นตัวอักษร "\000026" (literal)
+  s = s.replace(/\\0{1,}(\d{1,3})/g, '');
+
+  // 2) บางปืนส่งเป็น control char จริง (ASCII 0-31, 127)
+  s = s.replace(/[\x00-\x1F\x7F]/g, '');
+
+  // 3) ตัดช่องว่าง
+  s = s.trim();
+
+  // 4) ถ้าหลงเหลือ prefix อื่น ๆ ให้ดึงตั้งแต่ "QR-" เป็นต้นไป (กันเหนียว)
+  const idx = s.indexOf('QR-');
+  if (idx > 0) s = s.slice(idx);
+
+  return s;
+}
+
+
   // ---------- Main actions ----------
   async function lookupQr(qr) {
     if (isSearching) return;
@@ -205,69 +227,109 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function checkin() {
-    if (isCheckingIn) return;
-    const id = (mId.value || '').trim();
-    if (!id) return;
+  let isPrinting = false;
 
-    isCheckingIn = true;
-    hideAlert();
+async function checkin() {
+  if (isCheckingIn) return;
+  const id = (mId.value || '').trim();
+  if (!id) return;
 
-    checkinBtn.disabled = true;
-    const oldText = checkinBtn.textContent;
-    checkinBtn.textContent = 'กำลังเช็คอิน...';
+  isCheckingIn = true;
+  hideAlert();
 
-    try {
-      const res = await fetch(`/attendees/${id}/checkin`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || ''
-        }
-      });
+  checkinBtn.disabled = true;
+  const oldText = checkinBtn.textContent;
+  checkinBtn.textContent = 'กำลังเช็คอิน...';
 
-      const data = await res.json().catch(() => ({}));
+  try {
+    const res = await fetch(`/attendees/${id}/checkin`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || ''
+      }
+    });
 
-      if (!res.ok || !data.ok) {
-        showAlert('danger', data.message || 'เช็คอินไม่สำเร็จ');
-        checkinBtn.disabled = false;
-        checkinBtn.textContent = oldText;
-        return;
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data.ok) {
+      showAlert('danger', data.message || 'เช็คอินไม่สำเร็จ');
+      checkinBtn.disabled = false;
+      checkinBtn.textContent = oldText;
+      return;
+    }
+
+    // ✅ success UI
+    setStatus('checked_in');
+    successBlock.classList.remove('d-none');
+    successTime.textContent = data.data?.checked_in_at
+      ? `เวลาเช็คอิน: ${data.data.checked_in_at}`
+      : 'ได้ลงทะเบียนเรียบร้อยแล้ว';
+
+    // ✅ เคลียร์ช่องสแกนทันที (ตามที่ต้องการ)
+    if (qrInput) {
+      qrInput.value = '';
+      qrInput.focus();
+    }
+
+    // ✅ สั่งพิมพ์ label (เปิดแท็บใหม่)
+    // กันเปิดซ้ำ (เช่นกดปุ่มรัว ๆ หรือ API ตอบซ้ำ)
+    if (!isPrinting) {
+      isPrinting = true;
+
+      // เปิดหน้า label ที่มี window.print() auto อยู่แล้ว
+      const printWin = window.open(`/attendees/${id}/label`, '_blank', 'width=520,height=740');
+
+      // เผื่อบาง browser block popup ให้แจ้งเตือน
+      if (!printWin) {
+        showAlert('warning', 'เบราว์เซอร์บล็อคป๊อปอัป กรุณาอนุญาต pop-up เพื่อพิมพ์สติ๊กเกอร์');
       }
 
-      // success UI
-      setStatus('checked_in');
-      successBlock.classList.remove('d-none');
-      successTime.textContent = data.data?.checked_in_at
-        ? `เวลาเช็คอิน: ${data.data.checked_in_at}`
-        : 'ได้ลงทะเบียนเรียบร้อยแล้ว';
-
-      // beep success (โทนต่ำ)
-      try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = 520;
-        gain.gain.value = 0.05;
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        setTimeout(() => { osc.stop(); ctx.close(); }, 120);
-      } catch (e) {}
-    } finally {
-      isCheckingIn = false;
+      // ปลดล็อคหลังสั้น ๆ
+      setTimeout(() => { isPrinting = false; }, 1200);
     }
+
+    // ✅ beep success (โทนต่ำ)
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 520;
+      gain.gain.value = 0.05;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      setTimeout(() => { osc.stop(); ctx.close(); }, 120);
+    } catch (e) {}
+
+  } finally {
+    isCheckingIn = false;
   }
+}
+
 
   // ---------- Events ----------
-  qrInput?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      lookupQr(qrInput.value);
+qrInput?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+
+    const raw = qrInput.value;
+    const cleaned = cleanQr(raw);
+
+    // 👉 ล้างช่องทันทีหลังรับค่า
+    qrInput.value = '';
+
+    if (!cleaned) {
+      beep();
+      shakeInput();
+      return;
     }
-  });
+
+    lookupQr(cleaned);
+  }
+});
 
   qrClearBtn?.addEventListener('click', () => {
     qrInput.value = '';

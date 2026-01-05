@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendeeController;
+use App\Http\Controllers\AttendeeExportController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard'); // หรือหน้าไหนก็ได้หลัง login
@@ -15,9 +16,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/attendees/{attendee}/label', [AttendeeController::class, 'label'])
+  ->name('attendees.label')
+  ->middleware('auth');
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [AttendeeController::class, 'index'])->name('dashboard');
+
+    Route::get('/attendees/export', [AttendeeExportController::class, 'export'])
+    ->name('attendees.export'); // ✅ ส่งออก Excel
 
     Route::get('/attendees/lookup', [AttendeeController::class, 'lookup'])->name('attendees.lookup'); // ✅ ค้นหา QR
 

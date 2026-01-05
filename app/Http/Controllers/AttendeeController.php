@@ -54,6 +54,15 @@ class AttendeeController extends Controller
         ));
     }
 
+    public function label(Attendee $attendee)
+    {
+        // ปรับขนาดตรงสติ๊กเกอร์ที่ใช้จริง
+        $w = 80; // mm
+        $h = 70; // mm
+
+        return view('attendees.label', compact('attendee','w','h'));
+    }
+
 
     public function lookup(Request $request)
     {

@@ -38,8 +38,11 @@
     </div>
 
     <div class="d-flex gap-2">
-      <a class="btn btn-dark" href="#">Export ข้อมูล</a>
-      <button class="btn btn-outline-dark" disabled>Logs</button>
+      <a class="btn btn-dark"
+        href="{{ route('attendees.export', request()->only(['q','status','register_date'])) }}">
+        Export ข้อมูล
+        </a>
+      {{-- <button class="btn btn-outline-dark" disabled>Logs</button> --}}
     </div>
   </div>
 
@@ -241,6 +244,12 @@
 
       <div class="modal-body p-4">
         <div id="qrModalAlert" class="alert d-none mb-3" role="alert"></div>
+
+        <div id="emptyState" class="d-none text-center py-4">
+  <div class="display-6">🔎</div>
+  <div class="fw-semibold mt-2">ไม่พบข้อมูลจาก QR Code นี้</div>
+  <div class="text-secondary small">ตรวจสอบ QR Code หรือพิมพ์ใหม่อีกครั้ง</div>
+</div>
 
         <div class="row g-3" id="attendeeBlock">
           <div class="col-md-8">
