@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\Attendee;
+use App\Models\Attendee2;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -17,7 +17,10 @@ class RegistrantsExport implements FromCollection, WithHeadings, WithMapping
 
     public function collection(): Collection
     {
-        $q = Attendee::query()->orderBy('id');
+        $q = Attendee2::query();
+
+        // เรียงตาม "ลำดับ" ให้เป็นตัวเลขจริง (no เป็น string)
+        $q->orderByRaw('CAST(`no` AS UNSIGNED) ASC');
 
         // (optional) export ตามตัวกรองหน้า dashboard
         if (!empty($this->filters['q'])) {
@@ -47,91 +50,118 @@ class RegistrantsExport implements FromCollection, WithHeadings, WithMapping
 
     public function headings(): array
     {
-        // ตรงตามไฟล์ Excel ที่แนบ (sheet Registrants)
+        // ชื่อหัวตารางให้ตรงกับไฟล์ XLSX ที่คุณใช้งาน (ชุดใหม่)
         return [
+            'ลำดับ',
+            'วันที่สมัคร',
+
             'ชื่อ (ไทย)',
             'นามสกุล (ไทย)',
             'ชื่อ (อังกฤษ)',
             'นามสกุล (อังกฤษ)',
+
             'อีเมล',
             'เบอร์โทรศัพท์',
+
             'สังกัด',
-            'ตำแหน่งทางวิชาการ',
+            'ตำแหน่งวิชาการ',
             'ตำแหน่งบริหาร',
-            'ประเภทจังหวัด',
-            'เขต (กรุงเทพ)',
-            'จังหวัด',
-            'วิธีการเดินทางจากต่างจังหวัด',
-            'วิธีการเดินทางจากที่พัก',
+
+            'กรุงเทพฯ',
+            'ต่างจังหวัด',
+            'เขต / จังหวัด',
+
+            'วิธีการเดินทาง',
+
             'ประเภทอาหาร',
             'แพ้อาหาร',
-            'กิจกรรมที่เข้าร่วม',
-            'ประเภทการนำเสนอ',
+            'ข้อจำกัดอื่น ๆ',
+
+            'กิจกรรม: Workshop',
+            'กิจกรรม: Conference',
+            'กิจกรรม: Excursion',
+
+            'การนำเสนอ: Conference',
+            'การนำเสนอ: Oral',
+            'การนำเสนอ: Poster',
+
             'QR Code',
-            'วันที่สมัคร',
-            'เวลาเช็คอิน',
+            'เวลาเช็คอิน (ก่อน 15 ม.ค.)',
+            'เวลาเช็คอิน (15 ม.ค.)',
             'สถานะ',
         ];
     }
 
-    private function thaiDate(?string $date): string
-    {
-        if (!$date) return '';
-
-        try {
-            $dt = Carbon::parse($date)->timezone('Asia/Bangkok');
-        } catch (\Throwable $e) {
-            // ถ้า parse ไม่ได้ ก็ส่งค่าดิบกลับ
-            return (string) $date;
-        }
-
-        $thaiMonths = [
-            1=>'มกราคม',2=>'กุมภาพันธ์',3=>'มีนาคม',4=>'เมษายน',5=>'พฤษภาคม',6=>'มิถุนายน',
-            7=>'กรกฎาคม',8=>'สิงหาคม',9=>'กันยายน',10=>'ตุลาคม',11=>'พฤศจิกายน',12=>'ธันวาคม'
-        ];
-
-        $d = $dt->day;
-        $m = $thaiMonths[$dt->month] ?? $dt->month;
-        $y = $dt->year + 543; // พ.ศ.
-
-        return "{$d} {$m} {$y}";
-    }
-
     public function map($a): array
     {
-
-        $checkedIn = '';
-
-        if (!empty($a->checked_in_at)) {
-            $checkedIn = \Carbon\Carbon::parse($a->checked_in_at)
-                ->timezone('Asia/Bangkok')
-                ->format('Y-m-d H:i:s');
-        }
-
+        // เวลาเช็คอิน: ใช้ register_date1 / register_date2 (datetime)
+        $checkin1 = $this->fmtBkkDateTime($a->register_date1);
+        $checkin2 = $this->fmtBkkDateTime($a->register_date2);
 
         return [
+            $a->no ?? '',
+            $this->fmtBkkDate($a->register_date),
+
             $a->first_name_th ?? '',
             $a->last_name_th ?? '',
             $a->first_name_en ?? '',
             $a->last_name_en ?? '',
+
             $a->email ?? '',
             $a->phone ?? '',
+
             $a->organization ?? '',
             $a->academic_position ?? '',
             $a->admin_position ?? '',
-            $a->province_type ?? '',
-            $a->bangkok_zone ?? '',
+
+            $this->boolText($a->province_type_1),
+            $this->boolText($a->province_type_2),
             $a->province ?? '',
+
             $a->travel_from_province ?? '',
-            $a->travel_from_hotel ?? '',
+
             $a->food_type ?? '',
             $a->food_allergy ?? '',
-            $a->activity ?? '',
-            $a->presentation_type ?? '',
+            $a->food_other_constraints ?? '',
+
+            $this->boolText($a->activity_workshop),
+            $this->boolText($a->activity_conference),
+            $this->boolText($a->activity_excursion),
+
+            $this->boolText($a->presentation_conference),
+            $this->boolText($a->presentation_oral),
+            $this->boolText($a->presentation_poster),
+
             $a->qr_code ?? '',
-            $this->thaiDate($a->register_date),
-            $checkedIn,
+            $checkin1,
+            $checkin2,
             $a->status ?? '',
         ];
+    }
+
+    private function fmtBkkDate($value): string
+    {
+        if (!$value) return '';
+        try {
+            return Carbon::parse($value)->timezone('Asia/Bangkok')->format('Y-m-d');
+        } catch (\Throwable $e) {
+            return (string) $value;
+        }
+    }
+
+    private function fmtBkkDateTime($value): string
+    {
+        if (!$value) return '';
+        try {
+            return Carbon::parse($value)->timezone('Asia/Bangkok')->format('Y-m-d H:i:s');
+        } catch (\Throwable $e) {
+            return (string) $value;
+        }
+    }
+
+    private function boolText($value): string
+    {
+        if (is_null($value)) return '';
+        return $value ? 'TRUE' : 'FALSE';
     }
 }
