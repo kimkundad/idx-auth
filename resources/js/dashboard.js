@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const checkinBtn = document.getElementById('checkinBtn');
   const successBlock = document.getElementById('successBlock');
   const successTime = document.getElementById('successTime');
+  const printBtn = document.getElementById('printBtn');
 
   let isSearching = false;
   let isCheckingIn = false;
@@ -213,10 +214,13 @@ document.addEventListener('DOMContentLoaded', () => {
       showFoundUI();
       setStatus(a.status);
 
-      if (a.status === 'checked_in' && a.checked_in_at) {
-        successTime.textContent = `เวลาเช็คอิน: ${a.checked_in_at}`;
-        successBlock.classList.remove('d-none');
-      }
+      if (a.status === 'checked_in') {
+        const t = a.register_date2 || a.register_date1; // ให้ความสำคัญกับวันที่ 15 ก่อน
+        if (t) {
+            successTime.textContent = `เวลาเช็คอิน: ${t}`;
+            successBlock.classList.remove('d-none');
+        }
+        }
 
       // focus ปุ่มเช็คอิน (ถ้ายังไม่เช็คอิน)
       if (a.status !== 'checked_in') {
@@ -228,6 +232,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   let isPrinting = false;
+
+
+  printBtn?.addEventListener('click', () => {
+  const id = (mAttendeeId.value || '').trim();
+  if (!id || isPrinting) return;
+
+  isPrinting = true;
+
+  // เปิดหน้า label (หน้านี้ควรมี window.print() อัตโนมัติ)
+  const win = window.open(
+    `/attendees/${id}/label`,
+    '_blank',
+    'width=520,height=740'
+  );
+
+  if (!win) {
+    alert('เบราว์เซอร์บล็อคป๊อปอัป กรุณาอนุญาต pop-up เพื่อพิมพ์');
+  }
+
+  setTimeout(() => {
+    isPrinting = false;
+  }, 1000);
+});
 
 async function checkin() {
   if (isCheckingIn) return;
@@ -262,9 +289,10 @@ async function checkin() {
     // ✅ success UI
     setStatus('checked_in');
     successBlock.classList.remove('d-none');
-    successTime.textContent = data.data?.checked_in_at
-      ? `เวลาเช็คอิน: ${data.data.checked_in_at}`
-      : 'ได้ลงทะเบียนเรียบร้อยแล้ว';
+    const t = data.data?.register_date2 || data.data?.register_date1;
+    successTime.textContent = t
+    ? `เวลาเช็คอิน: ${t}`
+    : 'ได้ลงทะเบียนเรียบร้อยแล้ว';
 
     // ✅ เคลียร์ช่องสแกนทันที (ตามที่ต้องการ)
     if (qrInput) {

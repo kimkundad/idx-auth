@@ -2,3 +2,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+table.table {
+  min-width: 1600px; /* กันตารางหดจนอ่านไม่ได้ */
+}
+
+.table-body-sm {
+  font-size: 0.75rem;
+}
+
+.table-head-sm th {
+  font-size: 0.85rem;
+  font-weight: 600; /* ยังอ่านง่าย */
+}

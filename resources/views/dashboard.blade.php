@@ -150,82 +150,147 @@
   </div>
 
   {{-- Table --}}
-  <div class="card border-0 shadow-sm rounded-4">
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table align-middle">
-          <thead class="table-light">
-            <tr>
-              <th style="width:70px;">#</th>
-              <th>ชื่อ-สกุล</th>
-              <th>โทร</th>
-              <th>อีเมล</th>
-              <th>องค์กร</th>
-              <th>วันที่ลงทะเบียน</th>
-              <th>สถานะ</th>
-              <th class="text-end" style="width:280px;">จัดการ</th>
-            </tr>
-          </thead>
-          <tbody>
-            @forelse($attendees as $idx => $a)
-              <tr>
-                <td>{{ $attendees->firstItem() + $idx }}</td>
-                <td class="fw-semibold">
-                  {{ trim(($a->first_name_th ?? '').' '.($a->last_name_th ?? '')) ?: '-' }}
-                  <div class="text-secondary small">
-                    QR: {{ $a->qr_code ?? '-' }}
-                  </div>
-                </td>
-                <td>{{ $a->phone ?? '-' }}</td>
-                <td>{{ $a->email ?? '-' }}</td>
-                <td>{{ $a->organization ?? '-' }}</td>
-                <td>{{ $a->register_date ?? '-' }}</td>
-                <td>
-                  @if($a->status === 'checked_in')
-                    <span class="badge text-bg-success">เช็คอินแล้ว</span>
-                  @else
-                    <span class="badge text-bg-warning">รอเช็คอิน</span>
-                  @endif
-                </td>
+        {{-- Table --}}
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                <table class="table table-sm align-middle text-nowrap">
+                    <thead class="table-light table-head-sm">
+                    <tr>
+                        <th>ลำดับ</th>
+                        <th>วันที่สมัคร</th>
 
-                <td class="text-end">
-                  <div class="d-inline-flex gap-2">
-                    {{-- Check-in --}}
-                    <form method="POST" action="{{ route('attendees.checkin', $a) }}">
-                      @csrf
-                      <button class="btn btn-success"
-                              {{ $a->status === 'checked_in' ? 'disabled' : '' }}>
-                        เช็คอิน
-                      </button>
-                    </form>
+                        <th>ชื่อ (ไทย)</th>
+                        <th>นามสกุล (ไทย)</th>
+                        <th>ชื่อ (อังกฤษ)</th>
+                        <th>นามสกุล (อังกฤษ)</th>
 
-                    {{-- Edit --}}
-                    <a class="btn btn-outline-primary" href="{{ route('attendees.edit', $a) }}">
-                      แก้ไข
-                    </a>
+                        <th>อีเมล</th>
+                        <th>โทรศัพท์</th>
 
-                    {{-- Delete --}}
-                    <form method="POST" action="{{ route('attendees.destroy', $a) }}"
-                          onsubmit="return confirm('ยืนยันลบรายการนี้?');">
-                      @csrf
-                      @method('DELETE')
-                      <button class="btn btn-outline-danger">ลบ</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            @empty
-              <tr><td colspan="8" class="text-center text-secondary py-5">ไม่พบข้อมูล</td></tr>
-            @endforelse
-          </tbody>
-        </table>
-      </div>
+                        <th>สังกัด</th>
+                        <th>ตำแหน่งวิชาการ</th>
+                        <th>ตำแหน่งบริหาร</th>
 
-      <div class="d-flex justify-content-end">
-        {{ $attendees->links() }}
-      </div>
-    </div>
-  </div>
+                        <th>กรุงเทพฯ</th>
+                        <th>ต่างจังหวัด</th>
+                        <th>เขต / จังหวัด</th>
+
+                        <th>วิธีการเดินทาง</th>
+
+                        <th>ประเภทอาหาร</th>
+                        <th>แพ้อาหาร</th>
+                        <th>ข้อจำกัดอื่น ๆ</th>
+
+                        <th>กิจกรรม: Workshop</th>
+                        <th>กิจกรรม: Conference</th>
+                        <th>กิจกรรม: Excursion</th>
+
+                        <th>การนำเสนอ: Conference</th>
+                        <th>การนำเสนอ: Oral</th>
+                        <th>การนำเสนอ: Poster</th>
+
+                        <th>QR Code</th>
+                        <th>วันที่เช็คอิน (ก่อน 15 ม.ค.)</th>
+                        <th>วันที่เช็คอิน (15 ม.ค.)</th>
+                        <th>สถานะ</th>
+
+                        <th class="text-end">จัดการ</th>
+                    </tr>
+                    </thead>
+
+                    <tbody class="table-body-sm">
+                    @forelse($attendees as $idx => $a)
+                        <tr>
+
+                        <td>{{ $a->no ?? '-' }}</td>
+                        <td>{{ $a->register_date ? $a->register_date->format('Y-m-d') : '-' }}</td>
+
+                        <td>{{ $a->first_name_th ?? '-' }}</td>
+                        <td>{{ $a->last_name_th ?? '-' }}</td>
+                        <td>{{ $a->first_name_en ?? '-' }}</td>
+                        <td>{{ $a->last_name_en ?? '-' }}</td>
+
+                        <td>{{ $a->email ?? '-' }}</td>
+                        <td>{{ $a->phone ?? '-' }}</td>
+
+                        <td>{{ $a->organization ?? '-' }}</td>
+                        <td>{{ $a->academic_position ?? '-' }}</td>
+                        <td>{{ $a->admin_position ?? '-' }}</td>
+
+                        <td>{{ is_null($a->province_type_1) ? '-' : ($a->province_type_1 ? 'TRUE' : 'FALSE') }}</td>
+                        <td>{{ is_null($a->province_type_2) ? '-' : ($a->province_type_2 ? 'TRUE' : 'FALSE') }}</td>
+                        <td>{{ $a->province ?? '-' }}</td>
+
+                        <td>{{ $a->travel_from_province ?? '-' }}</td>
+
+                        <td>{{ $a->food_type ?? '-' }}</td>
+                        <td>{{ $a->food_allergy ?? '-' }}</td>
+                        <td>{{ $a->food_other_constraints ?? '-' }}</td>
+
+                        <td>{{ is_null($a->activity_workshop) ? '-' : ($a->activity_workshop ? 'TRUE' : 'FALSE') }}</td>
+                        <td>{{ is_null($a->activity_conference) ? '-' : ($a->activity_conference ? 'TRUE' : 'FALSE') }}</td>
+                        <td>{{ is_null($a->activity_excursion) ? '-' : ($a->activity_excursion ? 'TRUE' : 'FALSE') }}</td>
+
+                        <td>{{ is_null($a->presentation_conference) ? '-' : ($a->presentation_conference ? 'TRUE' : 'FALSE') }}</td>
+                        <td>{{ is_null($a->presentation_oral) ? '-' : ($a->presentation_oral ? 'TRUE' : 'FALSE') }}</td>
+                        <td>{{ is_null($a->presentation_poster) ? '-' : ($a->presentation_poster ? 'TRUE' : 'FALSE') }}</td>
+
+                        <td>{{ $a->qr_code ?? '-' }}</td>
+                        <td>{{ $a->register_date1 ? $a->register_date1->format('Y-m-d H:i:s') : '-' }}</td>
+                        <td>{{ $a->register_date2 ? $a->register_date2->format('Y-m-d H:i:s') : '-' }}</td>
+
+                        <td>
+                            @if($a->status === 'checked_in')
+                            <span class="badge text-bg-success">checked_in</span>
+                            @elseif($a->status === 'waiting')
+                            <span class="badge text-bg-warning">waiting</span>
+                            @elseif($a->status === 'rejected')
+                            <span class="badge text-bg-danger">rejected</span>
+                            @else
+                            <span class="badge text-bg-secondary">{{ $a->status ?? '-' }}</span>
+                            @endif
+                        </td>
+
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-2">
+                            {{-- Check-in --}}
+                            <form method="POST" action="{{ route('attendees.checkin', $a) }}">
+                                @csrf
+                                <button class="btn btn-success btn-sm"
+                                        {{ $a->status === 'checked_in' ? 'disabled' : '' }}>
+                                เช็คอิน
+                                </button>
+                            </form>
+
+                            {{-- Edit --}}
+                            <a class="btn btn-outline-primary btn-sm" href="{{ route('attendees.edit', $a) }}">
+                                แก้ไข
+                            </a>
+
+                            {{-- Delete --}}
+                            <form method="POST" action="{{ route('attendees.destroy', $a) }}"
+                                    onsubmit="return confirm('ยืนยันลบรายการนี้?');">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-outline-danger btn-sm">ลบ</button>
+                            </form>
+                            </div>
+                        </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="30" class="text-center text-secondary py-5">ไม่พบข้อมูล</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                {{ $attendees->links() }}
+                </div>
+            </div>
+        </div>
+
 
 </div>
 
@@ -309,6 +374,9 @@
               <div class="d-grid gap-2">
                 <button id="checkinBtn" type="button" class="btn btn-success btn-lg">
                   เช็คอิน
+                </button>
+                <button id="printBtn" type="button" class="btn btn-outline-dark btn-lg">
+                    🖨️ พิมพ์
                 </button>
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                   ปิด

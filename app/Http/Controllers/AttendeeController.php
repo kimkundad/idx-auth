@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attendee;
+use App\Models\Attendee2;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class AttendeeController extends Controller
 {
@@ -11,10 +12,9 @@ class AttendeeController extends Controller
     {
         $q = $request->string('q')->toString();
         $status = $request->string('status')->toString(); // waiting / checked_in / all
-
         $registerDate = $request->string('register_date')->toString();
 
-        $baseQuery = Attendee::query();
+        $baseQuery = Attendee2::query();
 
         if ($q !== '') {
             $baseQuery->where(function ($w) use ($q) {
@@ -37,15 +37,15 @@ class AttendeeController extends Controller
             $baseQuery->whereDate('register_date', $registerDate);
         }
 
-        // สถิติ (ทำจาก query แยกเพื่อความถูก)
-        $total = Attendee::count();
-        $checkedIn = Attendee::where('status', 'checked_in')->count();
-        $waiting = Attendee::where('status', 'waiting')->count();
-        $rejected = Attendee::where('status', 'rejected')->count(); // ถ้ามี
-        $pending = Attendee::where('status', 'pending')->count();   // ถ้ามี
+        // สถิติ
+        $total     = Attendee2::count();
+        $checkedIn = Attendee2::where('status', 'checked_in')->count();
+        $waiting   = Attendee2::where('status', 'waiting')->count();
+        $rejected  = Attendee2::where('status', 'rejected')->count();
+        $pending   = Attendee2::where('status', 'pending')->count();
 
         $attendees = $baseQuery
-            ->orderByDesc('id')
+            ->orderByRaw('CAST(`no` AS UNSIGNED) ASC')
             ->paginate(15)
             ->withQueryString();
 
@@ -54,15 +54,13 @@ class AttendeeController extends Controller
         ));
     }
 
-    public function label(Attendee $attendee)
+    public function label(Attendee2 $attendee)
     {
-        // ปรับขนาดตรงสติ๊กเกอร์ที่ใช้จริง
         $w = 80; // mm
         $h = 70; // mm
 
-        return view('attendees.label', compact('attendee','w','h'));
+        return view('attendees.label', compact('attendee', 'w', 'h'));
     }
-
 
     public function lookup(Request $request)
     {
@@ -72,7 +70,7 @@ class AttendeeController extends Controller
             return response()->json(['ok' => false, 'message' => 'กรุณากรอก QR Code'], 422);
         }
 
-        $attendee = Attendee::where('qr_code', $qr)->first();
+        $attendee = Attendee2::where('qr_code', $qr)->first();
 
         if (!$attendee) {
             return response()->json(['ok' => false, 'message' => 'ไม่พบข้อมูลจาก QR Code นี้'], 404);
@@ -82,26 +80,51 @@ class AttendeeController extends Controller
             'ok' => true,
             'data' => [
                 'id' => $attendee->id,
-                'full_name_th' => trim(($attendee->first_name_th ?? '').' '.($attendee->last_name_th ?? '')) ?: '-',
-                'full_name_en' => trim(($attendee->first_name_en ?? '').' '.($attendee->last_name_en ?? '')) ?: '-',
+                'full_name_th' => trim(($attendee->first_name_th ?? '') . ' ' . ($attendee->last_name_th ?? '')) ?: '-',
+                'full_name_en' => trim(($attendee->first_name_en ?? '') . ' ' . ($attendee->last_name_en ?? '')) ?: '-',
                 'email' => $attendee->email,
                 'phone' => $attendee->phone,
                 'organization' => $attendee->organization,
                 'register_date' => $attendee->register_date,
                 'status' => $attendee->status,
                 'qr_code' => $attendee->qr_code,
-                'checked_in_at' => $attendee->checked_in_at,
+
+                // แทน checked_in_at
+                'register_date1' => $attendee->register_date1
+                    ? $attendee->register_date1->format('Y-m-d H:i:s')
+                    : null,
+                'register_date2' => $attendee->register_date2
+                    ? $attendee->register_date2->format('Y-m-d H:i:s')
+                    : null,
             ],
         ]);
     }
 
-    public function checkin(Request $request, Attendee $attendee)
+    public function checkin(Request $request, Attendee2 $attendee)
     {
+        // จุดตัด: 15 ม.ค. 2026 (ทั้งวัน)
+        $cutoffStart = Carbon::create(2026, 1, 15, 0, 0, 0); // 2026-01-15 00:00:00
+        $cutoffEnd   = Carbon::create(2026, 1, 15, 23, 59, 59);
+
+        $now = now();
+
         if ($attendee->status !== 'checked_in') {
-            $attendee->update([
+            $payload = [
                 'status' => 'checked_in',
-                'checked_in_at' => now(), // ✅ now() = เวลาไทย
-            ]);
+            ];
+
+            if ($now->lt($cutoffStart)) {
+                // ก่อนวันที่ 15 → เก็บ register_date1
+                $payload['register_date1'] = $now;
+            } elseif ($now->betweenIncluded($cutoffStart, $cutoffEnd)) {
+                // วันที่ 15 → เก็บ register_date2
+                $payload['register_date2'] = $now;
+            } else {
+                // หลังวันที่ 15 (เผื่อใช้งานจริง) — เลือกเก็บ register_date2 ต่อเนื่อง
+                $payload['register_date2'] = $now;
+            }
+
+            $attendee->update($payload);
         }
 
         if ($request->expectsJson() || $request->ajax()) {
@@ -111,9 +134,11 @@ class AttendeeController extends Controller
                 'data' => [
                     'id' => $attendee->id,
                     'status' => $attendee->status,
-                    // ✅ ส่งเป็นเวลาไทยแน่นอน
-                    'checked_in_at' => $attendee->checked_in_at
-                        ? $attendee->checked_in_at->format('Y-m-d H:i:s')
+                    'register_date1' => $attendee->register_date1
+                        ? $attendee->register_date1->format('Y-m-d H:i:s')
+                        : null,
+                    'register_date2' => $attendee->register_date2
+                        ? $attendee->register_date2->format('Y-m-d H:i:s')
                         : null,
                 ],
             ]);
@@ -122,20 +147,20 @@ class AttendeeController extends Controller
         return back()->with('success', 'เช็คอินสำเร็จ');
     }
 
-    public function edit(Attendee $attendee)
+    public function edit(Attendee2 $attendee)
     {
         return view('attendees.edit', compact('attendee'));
     }
 
-    public function update(Request $request, Attendee $attendee)
+    public function update(Request $request, Attendee2 $attendee)
     {
         $data = $request->validate([
-            'first_name_th' => ['nullable','string','max:255'],
-            'last_name_th'  => ['nullable','string','max:255'],
-            'email'         => ['nullable','string','max:255'],
-            'phone'         => ['nullable','string','max:50'],
-            'organization'  => ['nullable','string','max:255'],
-            'status'        => ['required','string'],
+            'first_name_th' => ['nullable', 'string', 'max:255'],
+            'last_name_th'  => ['nullable', 'string', 'max:255'],
+            'email'         => ['nullable', 'string', 'max:255'],
+            'phone'         => ['nullable', 'string', 'max:50'],
+            'organization'  => ['nullable', 'string', 'max:255'],
+            'status'        => ['required', 'string'],
         ]);
 
         $attendee->update($data);
@@ -143,7 +168,7 @@ class AttendeeController extends Controller
         return redirect()->route('dashboard')->with('success', 'บันทึกข้อมูลแล้ว');
     }
 
-    public function destroy(Attendee $attendee)
+    public function destroy(Attendee2 $attendee)
     {
         $attendee->delete();
         return back()->with('success', 'ลบรายการแล้ว');
