@@ -17,10 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const alertBox = document.getElementById('qrModalAlert');
   const mId = document.getElementById('mAttendeeId');
   const mNameTh = document.getElementById('mNameTh');
-  const mNameEn = document.getElementById('mNameEn');
   const mEmail = document.getElementById('mEmail');
   const mPhone = document.getElementById('mPhone');
   const mOrg = document.getElementById('mOrg');
+  const mProvince = document.getElementById('mProvince');
+const mTravel = document.getElementById('mTravel');
+const editBtn = document.getElementById('editBtn');
 //   const mRegDate = document.getElementById('mRegDate');
 //   const mQr = document.getElementById('mQr');
   const mStatusBadge = document.getElementById('mStatusBadge');
@@ -63,10 +65,12 @@ const mPresentation = document.getElementById('mPresentation');
   function clearModalData() {
     mId.value = '';
     mNameTh.textContent = '-';
-    mNameEn.textContent = '-';
     mEmail.textContent = '-';
     mPhone.textContent = '-';
     mOrg.textContent = '-';
+    mProvince.textContent = '-';
+    mTravel.textContent = '-';
+    if (editBtn) editBtn.href = '#';
     // mRegDate.textContent = '-';
     // mQr.textContent = '-';
 
@@ -212,15 +216,24 @@ const mPresentation = document.getElementById('mPresentation');
       // fill
       mId.value = a.id ?? '';
       mNameTh.textContent = a.full_name_th ?? '-';
-      mNameEn.textContent = a.full_name_en ?? '-';
       mEmail.textContent = a.email ?? '-';
       mPhone.textContent = a.phone ?? '-';
       mOrg.textContent = a.organization ?? '-';
     //   mRegDate.textContent = a.register_date ?? '-';
     //   mQr.textContent = a.qr_code ?? '-';
 
+    mProvince.textContent = a.province ?? '-';
+
+// วิธีการเดินทาง (ถ้ามีหลายบรรทัด ให้แสดงเป็น /)
+const travelRaw = (a.travel_from_province ?? '').trim();
+mTravel.textContent = travelRaw
+  ? travelRaw.split(/\r\n|\n|\r/).map(s => s.trim()).filter(Boolean).join(' / ')
+  : '-';
+
     mActivity.textContent = a.activity_th ?? '-';
 mPresentation.textContent = a.presentation_th ?? '-';
+
+if (editBtn) editBtn.href = a.edit_url ?? '#';
 
       showFoundUI();
       setStatus(a.status);

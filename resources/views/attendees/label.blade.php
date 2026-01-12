@@ -39,7 +39,7 @@
 
     .name-line{
     font-weight: 700;
-    font-size: 4px;
+    font-size: 23px;
     line-height: 1.12;
     margin: 0;
     word-break: break-word;

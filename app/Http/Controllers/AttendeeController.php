@@ -87,10 +87,13 @@ class AttendeeController extends Controller
             'organization' => $attendee->organization,
             'status' => $attendee->status,
             'qr_code' => $attendee->qr_code,
+            'province' => $attendee->province,
+            'travel_from_province' => $attendee->travel_from_province,
+            'edit_url' => route('attendees.edit', $attendee),
 
             // ✅ เพิ่ม 2 ตัวนี้
-            'activity_th' => $this->activityTh($attendee),
-            'presentation_th' => $this->presentationTh($attendee),
+            'activity_th' => $this->activityEn($attendee),
+            'presentation_th' => $this->presentationEn($attendee),
 
             // ✅ เวลาเช็คอิน (ของ Attendee2 คุณใช้ register_date1/2)
             'register_date1' => optional($attendee->register_date1)->format('Y-m-d H:i:s'),
@@ -98,6 +101,29 @@ class AttendeeController extends Controller
         ],
         ]);
     }
+
+
+    private function activityEn($a): string
+{
+    $items = [];
+
+    if ($a->activity_workshop)   $items[] = 'Workshop';
+    if ($a->activity_conference) $items[] = 'Conference';
+    if ($a->activity_excursion)  $items[] = 'Excursion';
+
+    return $items ? implode(' / ', $items) : '-';
+}
+
+private function presentationEn($a): string
+{
+    $items = [];
+
+    if ($a->presentation_conference) $items[] = 'Conference';
+    if ($a->presentation_oral)       $items[] = 'Oral';
+    if ($a->presentation_poster)     $items[] = 'Poster';
+
+    return $items ? implode(' / ', $items) : '-';
+}
 
 
     private function activityTh($a): string

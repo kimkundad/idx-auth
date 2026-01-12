@@ -329,8 +329,7 @@
                                     <div>
                                         <div class="text-secondary small">ชื่อ-สกุล (TH)</div>
                                         <div class="fs-4 fw-semibold" id="mNameTh">-</div>
-                                        <div class="text-secondary small mt-2">Name (EN)</div>
-                                        <div class="fw-semibold" id="mNameEn">-</div>
+
                                     </div>
                                     <span class="badge rounded-pill text-bg-warning align-self-start"
                                         id="mStatusBadge">รอเช็คอิน</span>
@@ -360,6 +359,18 @@
                                         <div class="text-secondary">ประเภทการนำเสนอ</div>
                                         <div class="fw-semibold" id="mPresentation">-</div>
                                     </div>
+
+                                    <div class="col-12 col-md-6">
+                                    <div class="text-secondary">ประเภท</div>
+                                    <div class="fw-semibold" id="mProvince">-</div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                    <div class="text-secondary">วิธีการเดินทาง</div>
+                                    <div class="fw-semibold" id="mTravel">-</div>
+                                    </div>
+
+
                                 </div>
                             </div>
                         </div>
@@ -386,6 +397,9 @@
                                     <button id="printBtn" type="button" class="btn btn-outline-dark btn-lg">
                                         🖨️ พิมพ์
                                     </button>
+                                    <a id="editBtn" href="#" class="btn btn-outline-primary btn-lg">
+                                    ✏️ แก้ไขข้อมูล
+                                    </a>
                                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                                         ปิด
                                     </button>
