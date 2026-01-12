@@ -21,14 +21,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const mEmail = document.getElementById('mEmail');
   const mPhone = document.getElementById('mPhone');
   const mOrg = document.getElementById('mOrg');
-  const mRegDate = document.getElementById('mRegDate');
-  const mQr = document.getElementById('mQr');
+//   const mRegDate = document.getElementById('mRegDate');
+//   const mQr = document.getElementById('mQr');
   const mStatusBadge = document.getElementById('mStatusBadge');
 
   const checkinBtn = document.getElementById('checkinBtn');
   const successBlock = document.getElementById('successBlock');
   const successTime = document.getElementById('successTime');
   const printBtn = document.getElementById('printBtn');
+
+  const mActivity = document.getElementById('mActivity');
+const mPresentation = document.getElementById('mPresentation');
 
   let isSearching = false;
   let isCheckingIn = false;
@@ -55,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
     emptyState?.classList.remove('d-none');
   }
 
+
+
   function clearModalData() {
     mId.value = '';
     mNameTh.textContent = '-';
@@ -62,8 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
     mEmail.textContent = '-';
     mPhone.textContent = '-';
     mOrg.textContent = '-';
-    mRegDate.textContent = '-';
-    mQr.textContent = '-';
+    // mRegDate.textContent = '-';
+    // mQr.textContent = '-';
+
+    mActivity.textContent = '-';
+  mPresentation.textContent = '-';
 
     mStatusBadge.className = 'badge rounded-pill text-bg-secondary';
     mStatusBadge.textContent = '-';
@@ -208,8 +216,11 @@ document.addEventListener('DOMContentLoaded', () => {
       mEmail.textContent = a.email ?? '-';
       mPhone.textContent = a.phone ?? '-';
       mOrg.textContent = a.organization ?? '-';
-      mRegDate.textContent = a.register_date ?? '-';
-      mQr.textContent = a.qr_code ?? '-';
+    //   mRegDate.textContent = a.register_date ?? '-';
+    //   mQr.textContent = a.qr_code ?? '-';
+
+    mActivity.textContent = a.activity_th ?? '-';
+mPresentation.textContent = a.presentation_th ?? '-';
 
       showFoundUI();
       setStatus(a.status);
@@ -234,26 +245,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let isPrinting = false;
 
 
-  printBtn?.addEventListener('click', () => {
-  const id = (mAttendeeId.value || '').trim();
+printBtn?.addEventListener('click', () => {
+  const id = (mId.value || '').trim(); // ✅
   if (!id || isPrinting) return;
 
   isPrinting = true;
 
-  // เปิดหน้า label (หน้านี้ควรมี window.print() อัตโนมัติ)
-  const win = window.open(
-    `/attendees/${id}/label`,
-    '_blank',
-    'width=520,height=740'
-  );
+  const win = window.open(`/attendees/${id}/label`, '_blank', 'width=520,height=740');
 
   if (!win) {
     alert('เบราว์เซอร์บล็อคป๊อปอัป กรุณาอนุญาต pop-up เพื่อพิมพ์');
   }
 
-  setTimeout(() => {
-    isPrinting = false;
-  }, 1000);
+  setTimeout(() => { isPrinting = false; }, 1000);
 });
 
 async function checkin() {

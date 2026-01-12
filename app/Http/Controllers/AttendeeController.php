@@ -77,28 +77,46 @@ class AttendeeController extends Controller
         }
 
         return response()->json([
-            'ok' => true,
-            'data' => [
-                'id' => $attendee->id,
-                'full_name_th' => trim(($attendee->first_name_th ?? '') . ' ' . ($attendee->last_name_th ?? '')) ?: '-',
-                'full_name_en' => trim(($attendee->first_name_en ?? '') . ' ' . ($attendee->last_name_en ?? '')) ?: '-',
-                'email' => $attendee->email,
-                'phone' => $attendee->phone,
-                'organization' => $attendee->organization,
-                'register_date' => $attendee->register_date,
-                'status' => $attendee->status,
-                'qr_code' => $attendee->qr_code,
+        'ok' => true,
+        'data' => [
+            'id' => $attendee->id,
+            'full_name_th' => trim(($attendee->first_name_th ?? '').' '.($attendee->last_name_th ?? '')) ?: '-',
+            'full_name_en' => trim(($attendee->first_name_en ?? '').' '.($attendee->last_name_en ?? '')) ?: '-',
+            'email' => $attendee->email,
+            'phone' => $attendee->phone,
+            'organization' => $attendee->organization,
+            'status' => $attendee->status,
+            'qr_code' => $attendee->qr_code,
 
-                // แทน checked_in_at
-                'register_date1' => $attendee->register_date1
-                    ? $attendee->register_date1->format('Y-m-d H:i:s')
-                    : null,
-                'register_date2' => $attendee->register_date2
-                    ? $attendee->register_date2->format('Y-m-d H:i:s')
-                    : null,
-            ],
+            // ✅ เพิ่ม 2 ตัวนี้
+            'activity_th' => $this->activityTh($attendee),
+            'presentation_th' => $this->presentationTh($attendee),
+
+            // ✅ เวลาเช็คอิน (ของ Attendee2 คุณใช้ register_date1/2)
+            'register_date1' => optional($attendee->register_date1)->format('Y-m-d H:i:s'),
+            'register_date2' => optional($attendee->register_date2)->format('Y-m-d H:i:s'),
+        ],
         ]);
     }
+
+
+    private function activityTh($a): string
+{
+    $items = [];
+    if ($a->activity_workshop)   $items[] = 'เวิร์กช็อป';
+    if ($a->activity_conference) $items[] = 'ประชุมวิชาการ';
+    if ($a->activity_excursion)  $items[] = 'ทัศนศึกษา';
+    return $items ? implode(', ', $items) : '-';
+}
+
+private function presentationTh($a): string
+{
+    $items = [];
+    if ($a->presentation_conference) $items[] = 'Conference';
+    if ($a->presentation_oral)       $items[] = 'บรรยาย (Oral)';
+    if ($a->presentation_poster)     $items[] = 'โปสเตอร์ (Poster)';
+    return $items ? implode(', ', $items) : '-';
+}
 
     public function checkin(Request $request, Attendee2 $attendee)
     {
