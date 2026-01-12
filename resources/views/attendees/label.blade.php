@@ -30,12 +30,10 @@
     }
 
     .content{
-      width: 100%;
-      max-width: calc({{ $w }}mm - 12mm);
-      text-align: center;
-      padding: 0 6mm;
-      box-sizing: border-box;
-    }
+  width: {{ $w }}mm;   /* = 80mm เต็ม */
+  text-align: center;
+  box-sizing: border-box;
+}
 
     .name-line{
     font-weight: 700;
@@ -44,6 +42,7 @@
     margin: 0;
     word-break: break-word;
     margin-top: 8px;
+    margin-bottom: 8px;
   }
 
     .phone{
