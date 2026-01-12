@@ -10,7 +10,7 @@ class Attendee2Seeder extends Seeder
 {
     public function run(): void
     {
-        $path = storage_path('app/import/ข้อมูลผู้เข้าร่วมงาน EnT2026.xlsx');
+        $path = storage_path('app/import/EnT2026_for IDX_10 Jan.xlsx');
 
         $spreadsheet = IOFactory::load($path);
         $sheet = $spreadsheet->getSheetByName('ข้อมูลผู้สมัคร');

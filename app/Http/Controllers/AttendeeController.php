@@ -152,21 +152,49 @@ class AttendeeController extends Controller
         return view('attendees.edit', compact('attendee'));
     }
 
-    public function update(Request $request, Attendee2 $attendee)
-    {
-        $data = $request->validate([
-            'first_name_th' => ['nullable', 'string', 'max:255'],
-            'last_name_th'  => ['nullable', 'string', 'max:255'],
-            'email'         => ['nullable', 'string', 'max:255'],
-            'phone'         => ['nullable', 'string', 'max:50'],
-            'organization'  => ['nullable', 'string', 'max:255'],
-            'status'        => ['required', 'string'],
-        ]);
+public function update(Request $request, Attendee2 $attendee)
+{
+    $data = $request->validate([
+        'first_name_th' => ['nullable','string','max:255'],
+        'last_name_th'  => ['nullable','string','max:255'],
+        'email'         => ['nullable','string','max:255'],
+        'phone'         => ['nullable','string','max:50'],
+        'organization'  => ['nullable','string','max:255'],
 
-        $attendee->update($data);
+        'status'        => ['required','in:waiting,checked_in,rejected,pending'],
 
-        return redirect()->route('dashboard')->with('success', 'บันทึกข้อมูลแล้ว');
+        'province'      => ['nullable','string','max:255'],
+        'travel_from_province' => ['nullable','string','max:2000'],
+    ]);
+
+    // booleans (checkbox)
+    $data['activity_workshop'] = $request->boolean('activity_workshop');
+    $data['activity_conference'] = $request->boolean('activity_conference');
+    $data['activity_excursion'] = $request->boolean('activity_excursion');
+
+    $data['presentation_conference'] = $request->boolean('presentation_conference');
+    $data['presentation_oral'] = $request->boolean('presentation_oral');
+    $data['presentation_poster'] = $request->boolean('presentation_poster');
+
+    // ✅ บังคับ province_type จากจังหวัด (ชัวร์สุด)
+    $province = (string) ($data['province'] ?? '');
+
+    if ($province === 'กรุงเทพมหานคร') {
+        $data['province_type_1'] = true;
+        $data['province_type_2'] = false;
+    } elseif ($province !== '') {
+        $data['province_type_1'] = false;
+        $data['province_type_2'] = true;
+    } else {
+        $data['province_type_1'] = false;
+        $data['province_type_2'] = false;
     }
+
+    $attendee->update($data);
+
+    return redirect()->route('dashboard')->with('success', 'บันทึกข้อมูลแล้ว');
+}
+
 
     public function destroy(Attendee2 $attendee)
     {
