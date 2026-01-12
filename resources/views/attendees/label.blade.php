@@ -20,20 +20,18 @@
       print-color-adjust: exact;
     }
 
-    /* ใช้ grid ทำให้ “กล่องเนื้อหา” อยู่กลางบน-ล่าง + ซ้าย-ขวา */
     .sheet{
       width: {{ $w }}mm;
       height: {{ $h }}mm;
       display: grid;
-      place-items: center;            /* ⭐ กลางทั้งแนวนอน/แนวตั้ง */
+      place-items: center;
       padding: 0;
       box-sizing: border-box;
     }
 
-    /* กล่องเนื้อหา: บังคับให้เป็น “คอลัมน์เดียว” ไม่แตกซ้ายขวา */
     .content{
       width: 100%;
-      max-width: calc({{ $w }}mm - 12mm); /* เว้นขอบซ้ายขวา ~6mm */
+      max-width: calc({{ $w }}mm - 12mm);
       text-align: center;
       padding: 0 6mm;
       box-sizing: border-box;
@@ -41,7 +39,7 @@
 
     .name{
       font-weight: 700;
-      font-size: 18px;
+      font-size: 20px;
       line-height: 1.12;
       margin: 0;
       word-break: break-word;
@@ -55,12 +53,11 @@
       margin-bottom: 3mm;
     }
 
-    /* เส้นบางและสั้นแบบตัวอย่าง */
     .divider{
       height: 0;
       border: 0;
       border-top: 1px solid #111;
-      width: 48mm;          /* ⭐ คุมความยาวเส้นให้เหมือนตัวอย่าง */
+      width: 48mm;
       margin: 0 auto 3mm auto;
     }
 
@@ -72,20 +69,31 @@
       word-break: break-word;
     }
 
-    .act{
-      font-weight: 500;
-      font-size: 11px;
-      line-height: 1.25;
+    /* ===== Activity / Present (ตามรูป) ===== */
+    .section-title{
+      font-weight: 700;
+      font-size: 12px;
       margin: 0;
-      white-space: pre-wrap;
-      word-break: break-word;
+      line-height: 1.2;
+    }
 
-      /* กันยาวเกิน: ตัด 3 บรรทัด */
+    .section-items{
+      font-weight: 600;
+      font-size: 11px;
+      margin: 0.8mm 0 2.2mm 0;
+      line-height: 1.25;
+      word-break: break-word;
+      white-space: normal;
+    }
+
+    /* กันยาวเกิน (รวมทั้ง 2 บล็อก) */
+    .clamp{
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
       overflow: hidden;
     }
+    .clamp-activity{ -webkit-line-clamp: 2; }
+    .clamp-present{ -webkit-line-clamp: 2; }
 
     .no-print{ padding:10px; }
     @media print { .no-print{ display:none !important; } }
@@ -97,6 +105,22 @@
     <button onclick="window.print()">พิมพ์</button>
     <button onclick="window.close()">ปิด</button>
   </div>
+
+  @php
+    // ---- Activity (เลือกเฉพาะที่เป็น true) ----
+    $activity = [];
+    if (!empty($attendee->activity_workshop))   $activity[] = 'Workshop';
+    if (!empty($attendee->activity_conference)) $activity[] = 'Conference';
+    if (!empty($attendee->activity_excursion))  $activity[] = 'Excursion';
+    $activityText = $activity ? implode(' / ', $activity) : '-';
+
+    // ---- Present (เลือกเฉพาะที่เป็น true) ----
+    $present = [];
+    if (!empty($attendee->presentation_conference)) $present[] = 'Conference';
+    if (!empty($attendee->presentation_oral))       $present[] = 'Oral';
+    if (!empty($attendee->presentation_poster))     $present[] = 'Poster';
+    $presentText = $present ? implode(' / ', $present) : '-';
+  @endphp
 
   <div class="sheet">
     <div class="content">
@@ -114,9 +138,12 @@
         {{ $attendee->organization ?? '-' }}
       </div>
 
-      <div class="act">
-        {{ $attendee->activity ?? '-' }}
-      </div>
+      <p class="section-title">Activity</p>
+      <p class="section-items clamp clamp-activity">{{ $activityText }}</p>
+
+      <p class="section-title">Present</p>
+      <p class="section-items clamp clamp-present">{{ $presentText }}</p>
+
     </div>
   </div>
 
