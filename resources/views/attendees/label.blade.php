@@ -37,13 +37,13 @@
       box-sizing: border-box;
     }
 
-    .name{
-      font-weight: 700;
-      font-size: 20px;
-      line-height: 1.12;
-      margin: 0;
-      word-break: break-word;
-    }
+    .name-line{
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1.12;
+    margin: 0;
+    word-break: break-word;
+  }
 
     .phone{
       font-weight: 600;
@@ -79,7 +79,7 @@
 
     .section-items{
       font-weight: 600;
-      font-size: 11px;
+      font-size: 14px;
       margin: 0.8mm 0 2.2mm 0;
       line-height: 1.25;
       word-break: break-word;
@@ -124,9 +124,8 @@
 
   <div class="sheet">
     <div class="content">
-      <div class="name">
-        {{ trim(($attendee->first_name_th ?? '').' '.($attendee->last_name_th ?? '')) }}
-      </div>
+      <div class="name-line">{{ $attendee->first_name_th ?? '' }}</div>
+<div class="name-line">{{ $attendee->last_name_th ?? '' }}</div>
 
       <div class="phone">
         โทร. {{ $attendee->phone ?? '-' }}
