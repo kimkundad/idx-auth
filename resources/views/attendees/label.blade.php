@@ -39,7 +39,7 @@
 
     .name-line{
     font-weight: 700;
-    font-size: 25px;
+    font-size: 4px;
     line-height: 1.12;
     margin: 0;
     word-break: break-word;
@@ -125,12 +125,7 @@
 
   <div class="sheet">
     <div class="content">
-      <div class="name-line">{{ $attendee->first_name_th ?? '' }}</div>
-<div class="name-line">{{ $attendee->last_name_th ?? '' }}</div>
-
-      <div class="phone">
-        โทร. {{ $attendee->phone ?? '-' }}
-      </div>
+      <div class="name-line">{{ $attendee->first_name_th ?? '' }} {{ $attendee->last_name_th ?? '' }}</div>
 
       <hr class="divider">
 

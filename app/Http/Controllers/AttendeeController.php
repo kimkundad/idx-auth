@@ -56,8 +56,8 @@ class AttendeeController extends Controller
 
     public function label(Attendee2 $attendee)
     {
-        $w = 70; // mm
-        $h = 80; // mm
+        $w = 80; // mm
+        $h = 70; // mm
 
         return view('attendees.label', compact('attendee', 'w', 'h'));
     }
