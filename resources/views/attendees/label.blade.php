@@ -72,7 +72,7 @@
     /* ===== Activity / Present (ตามรูป) ===== */
     .section-title{
       font-weight: 700;
-      font-size: 12px;
+      font-size: 10px;
       margin: 0;
       line-height: 1.2;
     }
@@ -135,7 +135,7 @@
       <p class="section-title">Activity</p>
       <p class="section-items clamp clamp-activity">{{ $activityText }}</p>
 
-      <p class="section-title">Present</p>
+      <p class="section-title" style="margin-top:15px">Present</p>
       <p class="section-items clamp clamp-present">{{ $presentText }}</p>
 
     </div>
