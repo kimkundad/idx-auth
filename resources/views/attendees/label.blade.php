@@ -39,10 +39,11 @@
 
     .name-line{
     font-weight: 700;
-    font-size: 20px;
+    font-size: 25px;
     line-height: 1.12;
     margin: 0;
     word-break: break-word;
+    margin-top: 8px;
   }
 
     .phone{
