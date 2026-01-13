@@ -260,14 +260,15 @@
 
                                     <td class="text-end">
                                         <div class="d-inline-flex gap-2">
-                                            {{-- Check-in --}}
-                                            <form method="POST" action="{{ route('attendees.checkin', $a) }}">
-                                                @csrf
-                                                <button class="btn btn-success btn-sm"
-                                                    {{ $a->status === 'checked_in' ? 'disabled' : '' }}>
-                                                    เช็คอิน
-                                                </button>
-                                            </form>
+                                            {{-- Check-in (เปิด Modal) --}}
+                                            <button
+                                                type="button"
+                                                class="btn btn-success btn-sm js-open-checkin"
+                                                data-attendee-id="{{ $a->id }}"
+                                                {{ $a->status === 'checked_in' ? 'disabled' : '' }}
+                                            >
+                                                เช็คอิน
+                                            </button>
 
                                             {{-- Edit --}}
                                             <a class="btn btn-outline-primary btn-sm"

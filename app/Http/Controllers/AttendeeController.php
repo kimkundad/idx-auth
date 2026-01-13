@@ -324,6 +324,30 @@ public function store(Request $request)
 }
 
 
+public function lookupById(Attendee2 $attendee)
+{
+    return response()->json([
+        'ok' => true,
+        'data' => [
+            'id' => $attendee->id,
+            'full_name_th' => trim($attendee->first_name_th.' '.$attendee->last_name_th),
+            'email' => $attendee->email,
+            'phone' => $attendee->phone,
+            'organization' => $attendee->organization,
+            'province' => $attendee->province,
+            'travel_from_province' => $attendee->travel_from_province,
+            'activity_th' => $this->activityEn($attendee),
+            'presentation_th' => $this->presentationEn($attendee),
+            'status' => $attendee->status,
+            'edit_url' => route('attendees.edit', $attendee),
+            'register_date1' => $attendee->register_date1,
+            'register_date2' => $attendee->register_date2,
+        ],
+    ]);
+}
+
+
+
 
 
     public function destroy(Attendee2 $attendee)

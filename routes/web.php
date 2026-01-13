@@ -37,6 +37,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/attendees/create', [AttendeeController::class, 'create'])->name('attendees.create');
     Route::post('/attendees', [AttendeeController::class, 'store'])->name('attendees.store');
 
+    Route::get('/attendees/{attendee}/lookup', [AttendeeController::class, 'lookupById']);
+
 });
 
 require __DIR__.'/auth.php';

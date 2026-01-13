@@ -63,6 +63,20 @@ const mRegisterDate2 = document.getElementById('mRegisterDate2');
     emptyState?.classList.remove('d-none');
   }
 
+  // ปุ่ม check-in จากตาราง
+  document.querySelectorAll('.js-open-checkin').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.attendeeId;
+      if (!id) return;
+
+      // เปิด modal
+      qrModal.show();
+
+      // เรียก lookup ด้วย id (ไม่ต้องใช้ QR)
+      await lookupById(id);
+    });
+  });
+
 
 
   function clearModalData() {
@@ -178,6 +192,57 @@ const mRegisterDate2 = document.getElementById('mRegisterDate2');
 
   return s;
 }
+
+
+async function lookupById(id) {
+  if (!id) return;
+
+  hideAlert();
+  clearModalData();
+  showNotFoundUI();
+
+  try {
+    const res = await fetch(`/attendees/${id}/lookup`, {
+      headers: { Accept: 'application/json' }
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data.ok) {
+      showAlert('danger', data.message || 'ไม่พบข้อมูล');
+      showNotFoundUI();
+      return;
+    }
+
+    const a = data.data;
+
+    // fill modal (เหมือน lookupQr)
+    mId.value = a.id ?? '';
+    mNameTh.textContent = a.full_name_th ?? '-';
+    mEmail.textContent = a.email ?? '-';
+    mPhone.textContent = a.phone ?? '-';
+    mOrg.textContent = a.organization ?? '-';
+
+    mProvince.textContent = a.province ?? '-';
+
+    const travelRaw = (a.travel_from_province ?? '').trim();
+    mTravel.textContent = travelRaw
+      ? travelRaw.split(/\r\n|\n|\r/).join(' / ')
+      : '-';
+
+    mActivity.textContent = a.activity_th ?? '-';
+    mPresentation.textContent = a.presentation_th ?? '-';
+
+    if (editBtn) editBtn.href = a.edit_url ?? '#';
+
+    showFoundUI();
+    setStatus(a.status);
+
+  } catch (e) {
+    showAlert('danger', 'เกิดข้อผิดพลาด');
+  }
+}
+
 
 
   // ---------- Main actions ----------
