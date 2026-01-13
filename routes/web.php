@@ -33,6 +33,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/attendees/{attendee}/edit', [AttendeeController::class, 'edit'])->name('attendees.edit');
     Route::put('/attendees/{attendee}', [AttendeeController::class, 'update'])->name('attendees.update');
     Route::delete('/attendees/{attendee}', [AttendeeController::class, 'destroy'])->name('attendees.destroy');
+
+    Route::get('/attendees/create', [AttendeeController::class, 'create'])->name('attendees.create');
+    Route::post('/attendees', [AttendeeController::class, 'store'])->name('attendees.store');
+
 });
 
 require __DIR__.'/auth.php';

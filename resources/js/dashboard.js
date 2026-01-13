@@ -35,6 +35,9 @@ const editBtn = document.getElementById('editBtn');
   const mActivity = document.getElementById('mActivity');
 const mPresentation = document.getElementById('mPresentation');
 
+const mRegisterDate1 = document.getElementById('mRegisterDate1');
+const mRegisterDate2 = document.getElementById('mRegisterDate2');
+
   let isSearching = false;
   let isCheckingIn = false;
 
@@ -219,6 +222,8 @@ const mPresentation = document.getElementById('mPresentation');
       mEmail.textContent = a.email ?? '-';
       mPhone.textContent = a.phone ?? '-';
       mOrg.textContent = a.organization ?? '-';
+      mRegisterDate1.textContent = a.register_date1 ?? '-';
+      mRegisterDate2.textContent = a.register_date2 ?? '-';
     //   mRegDate.textContent = a.register_date ?? '-';
     //   mQr.textContent = a.qr_code ?? '-';
 

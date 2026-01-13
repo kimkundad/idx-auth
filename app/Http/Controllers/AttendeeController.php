@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attendee2;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AttendeeController extends Controller
 {
@@ -211,16 +212,16 @@ public function update(Request $request, Attendee2 $attendee)
         'travel_from_province' => ['nullable','string','max:2000'],
     ]);
 
-    // booleans (checkbox)
-    $data['activity_workshop'] = $request->boolean('activity_workshop');
-    $data['activity_conference'] = $request->boolean('activity_conference');
-    $data['activity_excursion'] = $request->boolean('activity_excursion');
+    // ---------- booleans (checkbox) ----------
+    $data['activity_workshop']    = $request->boolean('activity_workshop');
+    $data['activity_conference']  = $request->boolean('activity_conference');
+    $data['activity_excursion']   = $request->boolean('activity_excursion');
 
     $data['presentation_conference'] = $request->boolean('presentation_conference');
-    $data['presentation_oral'] = $request->boolean('presentation_oral');
-    $data['presentation_poster'] = $request->boolean('presentation_poster');
+    $data['presentation_oral']       = $request->boolean('presentation_oral');
+    $data['presentation_poster']     = $request->boolean('presentation_poster');
 
-    // ✅ บังคับ province_type จากจังหวัด (ชัวร์สุด)
+    // ---------- province type ----------
     $province = (string) ($data['province'] ?? '');
 
     if ($province === 'กรุงเทพมหานคร') {
@@ -234,15 +235,106 @@ public function update(Request $request, Attendee2 $attendee)
         $data['province_type_2'] = false;
     }
 
+    // ✅ ถ้าเปลี่ยนสถานะเป็น waiting → ล้างวันที่ลงทะเบียน
+    if ($data['status'] === 'waiting') {
+        $data['register_date1'] = null;
+        $data['register_date2'] = null;
+    }
+
     $attendee->update($data);
 
-    return redirect()->route('dashboard')->with('success', 'บันทึกข้อมูลแล้ว');
+    return redirect()
+        ->route('dashboard')
+        ->with('success', 'บันทึกข้อมูลแล้ว');
 }
+
+
+
+public function store(Request $request)
+{
+    $data = $request->validate([
+        'first_name_th' => ['nullable','string','max:255'],
+        'last_name_th'  => ['nullable','string','max:255'],
+        'email'         => ['nullable','string','max:255'],
+        'phone'         => ['nullable','string','max:50'],
+        'organization'  => ['nullable','string','max:255'],
+
+        'status'        => ['required','in:waiting,checked_in,rejected,pending'],
+
+        'province'      => ['nullable','string','max:255'],
+        'travel_from_province' => ['nullable','string','max:2000'],
+    ]);
+
+    // ✅ no ต่อเลขอัตโนมัติ
+    $maxNo = DB::table('attendees2')->max(DB::raw('CAST(`no` AS UNSIGNED)'));
+    $data['no'] = ($maxNo ? ((int)$maxNo + 1) : 1);
+
+    // ✅ วันที่เพิ่มข้อมูล
+    $data['register_date'] = now();
+
+    // ✅ checkbox booleans
+    $data['activity_workshop']   = $request->boolean('activity_workshop');
+    $data['activity_conference'] = $request->boolean('activity_conference');
+    $data['activity_excursion']  = $request->boolean('activity_excursion');
+
+    $data['presentation_conference'] = $request->boolean('presentation_conference');
+    $data['presentation_oral']       = $request->boolean('presentation_oral');
+    $data['presentation_poster']     = $request->boolean('presentation_poster');
+
+    // ✅ province_type จากจังหวัด
+    $province = (string) ($data['province'] ?? '');
+    if ($province === 'กรุงเทพมหานคร') {
+        $data['province_type_1'] = true;
+        $data['province_type_2'] = false;
+    } elseif ($province !== '') {
+        $data['province_type_1'] = false;
+        $data['province_type_2'] = true;
+    } else {
+        $data['province_type_1'] = false;
+        $data['province_type_2'] = false;
+    }
+
+    // ✅ ถ้า status = checked_in -> set register_date1/2 ตามวันที่ 14/15
+    if (($data['status'] ?? '') === 'checked_in') {
+        $now = now()->timezone('Asia/Bangkok');
+        $d14 = Carbon::create(2026, 1, 14, 0, 0, 0, 'Asia/Bangkok')->toDateString();
+        $d15 = Carbon::create(2026, 1, 15, 0, 0, 0, 'Asia/Bangkok')->toDateString();
+
+        if ($now->toDateString() <= $d14) {
+            $data['register_date1'] = $now;
+            $data['register_date2'] = null;
+        } elseif ($now->toDateString() === $d15) {
+            $data['register_date2'] = $now;
+            $data['register_date1'] = null;
+        } else {
+            // ถ้าหลัง 15 (กันเหนียว) ให้ไปลงวันที่ 15
+            $data['register_date2'] = $now;
+            $data['register_date1'] = null;
+        }
+    } else {
+        // ถ้าไม่ได้ checked_in จะปล่อยว่างไว้ (หรือจะเคลียร์ก็ได้)
+        $data['register_date1'] = null;
+        $data['register_date2'] = null;
+    }
+
+    Attendee2::create($data);
+
+    return redirect()->route('dashboard')
+        ->with('success', 'เพิ่มข้อมูลผู้เข้าร่วมเรียบร้อยแล้ว');
+}
+
+
 
 
     public function destroy(Attendee2 $attendee)
     {
         $attendee->delete();
         return back()->with('success', 'ลบรายการแล้ว');
+    }
+
+
+    public function create()
+    {
+        return view('attendees.create');
     }
 }

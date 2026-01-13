@@ -40,6 +40,9 @@
             </div>
 
             <div class="d-flex gap-2">
+             <a class="btn btn-primary" href="{{ route('attendees.create') }}">
+                     เพิ่มข้อมูล
+                </a>
                 <a class="btn btn-dark"
                     href="{{ route('attendees.export', request()->only(['q', 'status', 'register_date'])) }}">
                     Export ข้อมูล
@@ -368,6 +371,16 @@
                                     <div class="col-12 col-md-6">
                                     <div class="text-secondary">วิธีการเดินทาง</div>
                                     <div class="fw-semibold" id="mTravel">-</div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                    <div class="text-secondary">วันที่ลงทะเบียนวันที่ 14</div>
+                                    <div class="fw-semibold" id="mRegisterDate1">-</div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                    <div class="text-secondary">วันที่ลงทะเบียนวันที่ 15</div>
+                                    <div class="fw-semibold" id="mRegisterDate2">-</div>
                                     </div>
 
 
