@@ -6,7 +6,7 @@ use App\Models\Attendee2;
 use Illuminate\Database\Seeder;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-class Attendee2AppendSeeder extends Seeder
+class Attendee3AppendSeeder extends Seeder
 {
     public function run(): void
     {
@@ -73,10 +73,10 @@ class Attendee2AppendSeeder extends Seeder
             $presOral = (string) $sheet->getCell("W{$r}")->getValue();
             $presPoster = (string) $sheet->getCell("X{$r}")->getValue();
 
-            $qr = trim((string) $sheet->getCell("AH{$r}")->getValue());
+            $qr = trim((string) $sheet->getCell("AF{$r}")->getValue());
 
             // ถ้าแถวว่างจริง ๆ ให้ข้าม
-            if ($qr === '' && $firstTh === '' && $email === '') {
+            if ($firstTh === '') {
                 $skipped++;
                 continue;
             }

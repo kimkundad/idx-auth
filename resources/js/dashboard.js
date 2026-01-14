@@ -389,20 +389,20 @@ async function checkin() {
 
     // ✅ สั่งพิมพ์ label (เปิดแท็บใหม่)
     // กันเปิดซ้ำ (เช่นกดปุ่มรัว ๆ หรือ API ตอบซ้ำ)
-    if (!isPrinting) {
-      isPrinting = true;
+    // if (!isPrinting) {
+    //   isPrinting = true;
 
-      // เปิดหน้า label ที่มี window.print() auto อยู่แล้ว
-      const printWin = window.open(`/attendees/${id}/label`, '_blank', 'width=520,height=740');
+    //   // เปิดหน้า label ที่มี window.print() auto อยู่แล้ว
+    //   const printWin = window.open(`/attendees/${id}/label`, '_blank', 'width=520,height=740');
 
-      // เผื่อบาง browser block popup ให้แจ้งเตือน
-      if (!printWin) {
-        showAlert('warning', 'เบราว์เซอร์บล็อคป๊อปอัป กรุณาอนุญาต pop-up เพื่อพิมพ์สติ๊กเกอร์');
-      }
+    //   // เผื่อบาง browser block popup ให้แจ้งเตือน
+    //   if (!printWin) {
+    //     showAlert('warning', 'เบราว์เซอร์บล็อคป๊อปอัป กรุณาอนุญาต pop-up เพื่อพิมพ์สติ๊กเกอร์');
+    //   }
 
-      // ปลดล็อคหลังสั้น ๆ
-      setTimeout(() => { isPrinting = false; }, 1200);
-    }
+    //   // ปลดล็อคหลังสั้น ๆ
+    //   setTimeout(() => { isPrinting = false; }, 1200);
+    // }
 
     // ✅ beep success (โทนต่ำ)
     try {
