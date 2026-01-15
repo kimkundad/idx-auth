@@ -237,11 +237,11 @@ public function update(Request $request, Attendee2 $attendee)
         $data['province_type_2'] = false;
     }
 
-    // ✅ ถ้าเปลี่ยนสถานะเป็น waiting → ล้างวันที่ลงทะเบียน
-    if ($data['status'] === 'waiting') {
-        $data['register_date1'] = null;
-        $data['register_date2'] = null;
-    }
+    // // ✅ ถ้าเปลี่ยนสถานะเป็น waiting → ล้างวันที่ลงทะเบียน
+    // if ($data['status'] === 'waiting') {
+    //     $data['register_date1'] = null;
+    //     $data['register_date2'] = null;
+    // }
 
     $attendee->update($data);
 
