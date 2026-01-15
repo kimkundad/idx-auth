@@ -43,7 +43,7 @@ class AttendeeController extends Controller
         $checkedIn = Attendee2::where('status', 'checked_in')
         ->whereNotNull('register_date2')
         ->count();
-        $waiting   = Attendee2::where('status', 'waiting')->count();
+        $waiting   = Attendee2::where('register_date2', null)->count();
         $rejected  = Attendee2::where('status', 'rejected')->count();
         $pending   = Attendee2::where('status', 'pending')->count();
 
