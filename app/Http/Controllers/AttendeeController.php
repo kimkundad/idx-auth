@@ -40,7 +40,9 @@ class AttendeeController extends Controller
 
         // สถิติ
         $total     = Attendee2::count();
-        $checkedIn = Attendee2::where('status', 'checked_in')->count();
+        $checkedIn = Attendee2::where('status', 'checked_in')
+        ->whereNotNull('register_date2')
+        ->count();
         $waiting   = Attendee2::where('status', 'waiting')->count();
         $rejected  = Attendee2::where('status', 'rejected')->count();
         $pending   = Attendee2::where('status', 'pending')->count();
