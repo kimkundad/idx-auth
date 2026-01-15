@@ -97,7 +97,7 @@ const mRegisterDate2 = document.getElementById('mRegisterDate2');
     mStatusBadge.className = 'badge rounded-pill text-bg-secondary';
     mStatusBadge.textContent = '-';
 
-    checkinBtn.disabled = true;
+    checkinBtn.disabled = false;
     checkinBtn.textContent = 'เช็คอิน';
 
     successBlock.classList.add('d-none');
@@ -108,7 +108,7 @@ const mRegisterDate2 = document.getElementById('mRegisterDate2');
     if (status === 'checked_in') {
       mStatusBadge.className = 'badge rounded-pill text-bg-success';
       mStatusBadge.textContent = 'เช็คอินแล้ว';
-      checkinBtn.disabled = true;
+      checkinBtn.disabled = false;
       checkinBtn.textContent = 'เช็คอินแล้ว';
       successBlock.classList.remove('d-none');
     } else {
@@ -269,7 +269,7 @@ async function lookupById(id) {
       if (!res.ok || !data.ok) {
         showAlert('danger', data.message || 'ไม่พบข้อมูลจาก QR Code นี้');
         showNotFoundUI();
-        checkinBtn.disabled = true;
+        checkinBtn.disabled = false;
 
         // feedback
         beep();
@@ -351,7 +351,7 @@ async function checkin() {
   isCheckingIn = true;
   hideAlert();
 
-  checkinBtn.disabled = true;
+  checkinBtn.disabled = false;
   const oldText = checkinBtn.textContent;
   checkinBtn.textContent = 'กำลังเช็คอิน...';
 

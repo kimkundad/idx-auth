@@ -150,12 +150,12 @@ private function presentationTh($a): string
     public function checkin(Request $request, Attendee2 $attendee)
     {
         // จุดตัด: 15 ม.ค. 2026 (ทั้งวัน)
-        $cutoffStart = Carbon::create(2026, 1, 15, 0, 0, 0); // 2026-01-15 00:00:00
+        $cutoffStart = Carbon::create(2026, 1, 15, 0, 0, 0); // 2026-01-15 00:00:00 	QR-1765530674209-jat4g892f28
         $cutoffEnd   = Carbon::create(2026, 1, 15, 23, 59, 59);
 
         $now = now();
 
-        if ($attendee->status !== 'checked_in') {
+      //  if ($attendee->status !== 'checked_in') {
             $payload = [
                 'status' => 'checked_in',
             ];
@@ -172,7 +172,7 @@ private function presentationTh($a): string
             }
 
             $attendee->update($payload);
-        }
+     //   }
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
