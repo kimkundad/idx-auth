@@ -265,7 +265,6 @@
                                                 type="button"
                                                 class="btn btn-success btn-sm js-open-checkin"
                                                 data-attendee-id="{{ $a->id }}"
-                                                {{ $a->status === 'checked_in' ? 'disabled' : '' }}
                                             >
                                                 เช็คอิน
                                             </button>
